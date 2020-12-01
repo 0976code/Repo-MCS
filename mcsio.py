@@ -6,6 +6,7 @@ import time
 import sys
 import http.client as http
 import urllib
+import socket
 import json
 
 deviceId = "D91SYUp0"
@@ -47,24 +48,19 @@ humidity, temperature = Adafruit_DHT.read_retry(sensor, pin)
 
 while True:
 	h0,t0= Adafruit_DHT.read_retry(sensor, pin)
+	SwitchStatus=GPIO.input(24)
 	if h0 is not None and t0 is not None:
 		print('Temp={0:0.1f}*  Humidity={1:0.1f}%'.format(t0, h0))
-
-		payload = {"datapoints":[{"dataChnId":"Humidity","values":{"value":h0}},
-				{"dataChnId":"Temperature","values":{"value":t0}}]} 
-		post_to_mcs(payload)
 		time.sleep(1) 
-
 	else:
 		print('Failed to get reading. Try again!')
 		sys.exit(1)
-
-	SwitchStatus=GPIO.input(24)
+	
 	if(SwitchStatus==0):
 		print('Button pressed')
 	else:
 		print('Button released')
 	
-	payload={"datapoints":[{"datachnId":"Hum","values":{"value":humidity}}
-,{"dataChnId":"Temp","values":{"value":temperature}},{"dataChnId":"SwitchStatus"
-,"value":{"value":SwitchStatus}}]}
+	payload = {"datapoints":[{"dataChnId":"Humidity","values":{"value":h0}},{"dataChnId":"Temperature","values":{"value":t0}},{"dataChnId":"SwitchStatus","values":{"value":SwitchStatus}}]}
+	post_to_mcs(payload)
+	time.sleep(1)
